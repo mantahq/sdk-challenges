@@ -1,21 +1,28 @@
-import { MantaClient } from "mantahq-sdk";
 import { useEffect, useState } from "react";
 import { useDebounce } from "use-debounce";
 import { ErrorBoundary } from "react-error-boundary";
 
-// TODO: Features to add with the fetchOneRecords method:
-// - Set up the SDK
-// - Fetch products from data source on mantaHQ
-// - Display in Products component
-// - Add category filter
-// - Add price sorting
-// - Add pagination
-// - Add search functionality
+// =============================================================================
+// CHALLENGE #1: Product Catalog with fetchAllRecords()
+// =============================================================================
+// YOUR TASKS:
+// 1. Initialize the MantaHQ SDK client
+// 2. Implement fetchProducts() to get products from your table
+// 3. Add category filtering using the 'where' parameter
+// 4. Add search functionality using the 'search' parameter
+// 5. Add price sorting using 'orderBy' and 'order' parameters
+// 6. Implement pagination with 'page' and 'list' parameters
+//
+// HINTS:
+// - Check the SDK docs for fetchAllRecords() syntax
+// - The UI is already built - focus only on SDK implementation
+// - Look for TODO comments below for specific tasks
+// =============================================================================
 
+// TODO: Initialize the MantaHQ SDK client
+// Get your API key from the .env file and create a MantaClient instance
 const API_KEY = import.meta.env.VITE_MANTAHQ_API_KEY;
-const manta = new MantaClient({
-  sdkKey: API_KEY,
-});
+const manta = null; // Replace null with: new MantaClient({ sdkKey: API_KEY })
 
 function FetchAllRecords() {
   return (
@@ -41,7 +48,7 @@ function Fallback({ error, resetErrorBoundary }) {
         </div>
         <button
           onClick={resetErrorBoundary}
-          className=" bg-blue-500 text-white px-4 py-2 rounded"
+          className="bg-blue-500 text-white px-4 py-2 rounded"
         >
           Try again
         </button>
@@ -52,67 +59,54 @@ function Fallback({ error, resetErrorBoundary }) {
 }
 
 function Main() {
+  // State management - already set up for you
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [totalPages, setTotalPages] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
   const [category, setCategory] = useState("all");
   const [sortPrice, setSortPrice] = useState("lowest");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [query, setQuery] = useState("");
 
-  const filterByCategory = category === "all" ? {} : { category: category };
-  const sortOrder = sortPrice === "lowest" ? "asc" : "desc";
+  const itemsPerPage = 6; // Number of products per page
 
-  const itemsPerPage = 4;
-
+  // TODO: Implement the fetchProducts function
   async function fetchProducts() {
+    setLoading(true);
+
     try {
-      const products = await manta.fetchAllRecords({
-        table: "products2",
-        where: filterByCategory,
-        fields: [
-          "product_id",
-          "name",
-          "category",
-          "price",
-          "stock",
-          "description",
-          "image_url",
-        ],
-        search: {
-          columns: ["name", "description", "category"],
-          query: query,
-        },
-        orderBy: "price",
-        order: sortOrder,
-        page: currentPage,
-        list: itemsPerPage,
-      });
+      // TODO: Build the 'where' condition for category filtering
+      // HINT: If category is "all", use an empty object {}
+      // Otherwise, filter by the selected category: { category: category }
+      const filterByCategory = {}; // Replace with your implementation
 
-      if (!products.status) throw new Error("Failed to fetch products");
+      // TODO: Determine sort order
+      const sortOrder = "asc"; // Replace with your implementation
 
-      setProducts(products.data);
-      setTotalPages(products.meta.totalPages);
+      // TODO: Call manta.fetchAllRecords() with the appropriate parameters:
+
+      // TODO: Check if the response was successful
+
+      // TODO: Update state with the fetched data
     } catch (error) {
       console.error("Error fetching products:", error);
+      // You can add additional error handling here
     } finally {
       setLoading(false);
     }
   }
 
+  // Handle category filter change
   function handleSetCategoryFilter(e) {
     setCategory(e.target.value);
-    setCurrentPage(1);
+    setCurrentPage(1); // Reset to page 1 when filter changes
   }
 
-  useEffect(() => {
-    fetchProducts();
-    // eslint-disable-next-line
-  }, [category, sortPrice, currentPage, itemsPerPage, query]);
+  // TODO: Set up useEffect to fetch products when dependencies change
+  useEffect(() => {}, []); // Replace [] with proper dependencies
 
   return (
-    <div className="">
-      {" "}
+    <div>
       <Navigation
         query={query}
         setQuery={setQuery}
@@ -135,6 +129,10 @@ function Main() {
     </div>
   );
 }
+
+// ===============
+// UI COMPONENTS
+// ===============
 
 function Navigation({ query, setQuery, setCurrentPage }) {
   const [input, setInput] = useState(query || "");
@@ -173,7 +171,7 @@ function Header({ category, sortPrice, setSortPrice, onSetCategoryFilter }) {
       {category === "all" ? (
         "Showing All Products"
       ) : (
-        <p className="">
+        <p>
           Showing products in{" "}
           <span className="text-blue-500 underline">
             {category.charAt(0).toUpperCase() + category.slice(1)}
@@ -182,7 +180,7 @@ function Header({ category, sortPrice, setSortPrice, onSetCategoryFilter }) {
       )}
       <div className="flex gap-4">
         <select
-          className=" rounded-lg px-3 py-2 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="rounded-lg px-3 py-2 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
           value={category}
           onChange={onSetCategoryFilter}
         >
@@ -220,7 +218,7 @@ function Products({ products, loading }) {
       ) : (
         products.map((product) => (
           <div
-            className="flex flex-col  cursor-pointer flex-1 min-w-[150px] max-w-[300px]  rounded-xl  bg-stone-100"
+            className="flex flex-col cursor-pointer flex-1 min-w-[150px] max-w-[300px] rounded-xl bg-stone-100"
             key={product.product_id}
           >
             <img
@@ -264,7 +262,7 @@ function Paging({ currentPage, setCurrentPage, totalPages }) {
       <button
         disabled={currentPage === 1}
         onClick={() => setCurrentPage((prevPage) => Math.max(1, prevPage - 1))}
-        className="px-4 py-2 cursor-pointer text-base sm:text-xl text-blue-500"
+        className="px-4 py-2 cursor-pointer text-base sm:text-xl text-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         &larr; Previous page
       </button>
@@ -273,12 +271,12 @@ function Paging({ currentPage, setCurrentPage, totalPages }) {
       </span>
       <button
         disabled={currentPage === totalPages || totalPages === 0}
-        className="px-4 py-2 cursor-pointer text-base sm:text-xl text-blue-500"
+        className="px-4 py-2 cursor-pointer text-base sm:text-xl text-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
         onClick={() =>
           setCurrentPage((prevPage) => Math.min(totalPages, prevPage + 1))
         }
       >
-        Next page &rarr;{" "}
+        Next page &rarr;
       </button>
     </div>
   );

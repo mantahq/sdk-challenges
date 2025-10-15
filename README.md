@@ -1,6 +1,10 @@
-# Challenge #1
+# Challenge #1 - fetchAllRecords
 
-Welcome to the MantaHQ SDK beta testing program! This repository contains a progressive product catalog application that you'll build throughout the week to test all core SDK features.
+Welcome to Challenge 1. Your goal is to implement fetching and listing product data using `manta.fetchAllRecords()`.
+
+## Starter repo
+
+Branch: `challenge-1`
 
 ## Setup Instructions
 
@@ -43,7 +47,7 @@ Use the `products.csv` file in the repo to populate your table (20-30 products).
 
 ## Your Task
 
-The UI is already built. Your job is to implement the SDK calls in `src/App.jsx` in the `challenge-1` branch.
+The UI is already built. Your job is to implement the SDK calls in `src/components/FetchAllRecords.jsx` in the `challenge-1` branch.
 
 Look for all the `// TODO:` comments and implement them.
 
@@ -52,7 +56,7 @@ Look for all the `// TODO:` comments and implement them.
 Check the docs for `fetchAllRecords()`:
 [MantaHQ Docs - fetchAllRecords()](https://mantahq-core-sdk.super.site/fetching-data/fetchonerecord)
 
-**Key things you'll use today:**
+**Key things you'll use:**
 
 - `table` - Your table name
 - `where` - Filter conditions
@@ -70,7 +74,7 @@ Your app should:
 - ✅ Sort by price (low→high, high→low)
 - ✅ Navigate between pages
 - ✅ Show loading states (UI has been implemented)
-- ✅ Handle errors gracefully
+- ✅ **BONUS:** Handle errors gracefully
 
 ## Test These Scenarios
 
@@ -84,18 +88,17 @@ Your app should:
 
 ## Feedback
 
-When done, fill out the Day 1 feedback form: [Day 1 Feedback Form](https://forms.gle/...)
+When done, fill out the Challenge 1 feedback form: [Day 1 Feedback Form](https://forms.gle/...)
 
 ## Need Help?
 
 - Check the README in the repo
 - Read the SDK docs
-- Join our Discord server: #mantahq-beta
-- Email: hello@mantahq.com
+- Join our Discord server: [https://discord.gg/taH3JfVEMh](https://discord.gg/taH3JfVEMh)
 
 ## What's Next?
 
-**Branch for tomorrow:** `challenge-2`
+**Branch for challenge 2:** `challenge-2`
 
 **Good luck! Take your time and explore. This is your chance to help shape the SDK.**
 
