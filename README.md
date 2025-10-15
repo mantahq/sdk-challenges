@@ -7,7 +7,7 @@ Welcome to the MantaHQ SDK beta testing program! This repository contains a prog
 ### Prerequisites
 - Node.js 18+
 - npm or yarn
-- [MantaHQ Account](www.mantahq.com) and [API key](docs.mantahq.com)
+- [MantaHQ Account](https://www.mantahq.com) and [API key](https://docs.mantahq.com)
 
 ### Setup
 
