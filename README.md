@@ -1,4 +1,4 @@
-# MantaHQ Core SDK Beta Testing (Challenge #1)
+# Challenge #1
 
 Welcome to the MantaHQ SDK beta testing program! This repository contains a progressive product catalog application that you'll build throughout the week to test all core SDK features.
 
