@@ -1,6 +1,6 @@
 # MantaHQ SDK Beta Testing
 
-Welcome to the MantaHQ SDK beta testing program! This repository contains a progressive product catalog application that you'll build throughout the week to test all core SDK features.
+Welcome to the MantaHQ SDK beta testing program. This repository contains a progressive product catalog starter app you can use to test the SDK. Use the provided branches or run the tasks in your own project.
 
 ## Quick Start
 
@@ -65,6 +65,13 @@ Create this table in MantaHQ Studio:
 
 Each branch has its own README with specific instructions:
 
+## Use your own project
+
+You may test the SDK in your own project. If you do:
+
+- Make sure to use as many methods as possible
+- Create a README and write about what you implemented, methods used, and a link to your repo
+- Don't forget to fill the feedback form
 
 ## Resources
 
@@ -81,7 +88,7 @@ Please submit feedback forms daily:
 Your feedback shapes the SDK.
 
 
-## ❓ Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -115,4 +122,4 @@ Don't struggle alone!
 
 ## Have Fun!
 
-This is your chance to shape a product before it launches. Be honest, be critical, and help us build something great!
+Thanks for helping us build something great.
