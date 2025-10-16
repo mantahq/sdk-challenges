@@ -13,6 +13,8 @@ import AddProductForm from "./AddProductForm";
 // ✅ Add pagination
 // ✅ Add search functionality
 
+// =============================================================================
+
 // TODO: Features to add with createRecords method:
 // - Create an "Add Product" button in the Navigation component
 // - Add state for modal visibility (isOpen)
@@ -121,32 +123,9 @@ function Main() {
 
   async function createProducts(formData) {
     try {
-      const response = await manta.createRecords({
-        table: "products2",
-        data: [
-          {
-            name: formData.name,
-            category: formData.category,
-            product_id: `P${Date.now()}`, // Generate unique ID
-            price: parseFloat(formData.price),
-            stock: parseInt(formData.stock),
-            description: formData.description || "",
-            image_url: formData.image_url || "https://via.placeholder.com/300",
-          },
-        ],
-        options: {
-          upsert: true,
-          conflictKeys: ["product_id"],
-        },
-      });
-
-      console.log(response);
-
-      if (!response.status) {
-        throw new Error("Failed to create product");
-      }
-
-      await fetchProducts();
+      //
+      // TODO: Your manta.createRecords() implementation here
+      //
       alert("Product added successfully!");
     } catch (error) {
       console.error(error);

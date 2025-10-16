@@ -1,6 +1,10 @@
-# Challenge #1
+# Challenge 2 — createRecords
 
-Welcome to the MantaHQ SDK beta testing program! This repository contains a progressive product catalog application that you'll build throughout the week to test all core SDK features.
+Goal: Implement product creation using `manta.createRecords()` with validation, upsert, and refetch.
+
+## Starter repo
+
+Branch: `challenge-2`
 
 ## Setup Instructions
 
@@ -9,7 +13,7 @@ Welcome to the MantaHQ SDK beta testing program! This repository contains a prog
 ```bash
 git clone https://github.com/mantahq/sdk-challenges
 cd sdk-challenges
-git checkout challenge-1
+git checkout challenge-2
 npm install
 ```
 
@@ -21,7 +25,7 @@ Create `.env` file:
 VITE_MANTAHQ_API_KEY=your_key_here
 ```
 
-### 3. Create your database table in MantaHQ Studio
+### 3. Create your database table in MantaHQ Studio (if you haven't)
 
 **Table name:** `products`
 
@@ -43,59 +47,56 @@ Use the `products.csv` file in the repo to populate your table (20-30 products).
 
 ## Your Task
 
-The UI is already built. Your job is to implement the SDK calls in `src/App.jsx` in the `challenge-1` branch.
+The UI is already built. Your job is to implement the SDK calls in `src/components/CreateRecords.jsx` in the `challenge-2` branch.
 
 Look for all the `// TODO:` comments and implement them.
 
 ## SDK Documentation
 
-Check the docs for `fetchAllRecords()`:
-[MantaHQ Docs - fetchAllRecords()](https://mantahq-core-sdk.super.site/fetching-data/fetchonerecord)
+Check the docs for `createRecords()`:
+[MantaHQ Docs - createRecords()](https://mantahq-core-sdk.super.site/creating-data/createrecords)
 
-**Key things you'll use today:**
+## What to implement
 
-- `table` - Your table name
-- `where` - Filter conditions
-- `search` - Keyword search
-- `page` & `list` - Pagination
-- `orderBy` & `order` - Sorting
+Add an "Add product" flow (modal form already scaffolded in `src/components/AddProductForm.jsx`).
 
-## Definition of Done
+Core features
 
-Your app should:
+- Implement `createProducts(formData)` using `manta.createRecords()`
+- Generate a unique `product_id` per product (timestamp acceptable)
+- Use `options.upsert: true` and `conflictKeys: ['product_id']`
+- Validate locally before sending: name minLength 3, price > 0, stock >= 0
+- Show loading state while creating
+- Close modal on success and refetch products list
+- Surface helpful error messages (display network/validation errors)
+- **BONUS:** implement `dryRun: true` preview option (not required)
 
-- ✅ Display products in a grid (4 or 6 per page)
-- ✅ Filter by category dropdown
-- ✅ Search by product name
-- ✅ Sort by price (low→high, high→low)
-- ✅ Navigate between pages
-- ✅ Show loading states (UI has been implemented)
-- ✅ Handle errors gracefully
+Definition of done
+✅ createRecords call succeeds with `status: true`  
+✅ UI indicates success and the product appears on the list (after refetch)  
+✅ good error handling and user feedback  
+✅ Add test notes in your PR describing upsert behavior you observed
 
-## Test These Scenarios
+Test scenarios
 
-1. Browse all products (no filters)
-2. Filter by "electronics" category
-3. Search for "mouse"
-4. Combine category + price filters
-5. Sort by price ascending/descending
-6. Navigate to page 2, then apply filters
-7. Navigate to page 2, then back to page 1
+- Create a normal product
+- Attempt to create with invalid price (should show validation error)
+- Create duplicate `product_id` and confirm upsert behavior
+- Try dryRun = true (if implemented) and confirm no data is written
 
 ## Feedback
 
-When done, fill out the Day 1 feedback form: [Day 1 Feedback Form](https://forms.gle/...)
+When done, fill out the Challenge 2 feedback form: [Day 1 Feedback Form](https://forms.gle/...)
 
 ## Need Help?
 
 - Check the README in the repo
 - Read the SDK docs
-- Join our Discord server: #mantahq-beta
-- Email: hello@mantahq.com
+- Join our Discord server: [https://discord.gg/taH3JfVEMh](https://discord.gg/taH3JfVEMh)
 
 ## What's Next?
 
-**Branch for tomorrow:** `challenge-2`
+**Branch for challenge 3:** `challenge-3`
 
 **Good luck! Take your time and explore. This is your chance to help shape the SDK.**
 
