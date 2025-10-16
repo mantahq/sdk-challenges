@@ -86,7 +86,7 @@ Test scenarios
 
 ## Feedback
 
-When done, fill out the Challenge 2 feedback form: [Day 1 Feedback Form](https://forms.gle/...)
+When done, fill out the Challenge 2 feedback form: [Challenge 2 Feedback Form](https://forms.gle/...)
 
 ## Need Help?
 
