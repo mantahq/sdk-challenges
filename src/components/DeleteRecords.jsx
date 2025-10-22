@@ -4,6 +4,7 @@ import { useDebounce } from "use-debounce";
 import { ErrorBoundary } from "react-error-boundary";
 import AddProductForm from "./AddProductForm";
 import EditProductForm from "./EditProductForm";
+import DeleteConfirmModal from "./DeleteConfirmModal";
 
 // TODO: Features implemented with fetchAllRecords:
 // ✅ Set up the SDK
@@ -17,7 +18,7 @@ import EditProductForm from "./EditProductForm";
 // TODO: Features implemented with createRecords:
 // ✅ Create an "Add Product" button in the Navigation component
 // ✅ Add state for modal visibility (isOpen)
-// ✅ Create AddProductForm component with form fields (name, category, price, stock, description, image_url)
+// ✅ Create AddProductForm component with form fields
 // ✅ Implement createProduct function using manta.createRecords()
 // ✅ Add form validation (name: minLength 3, price: > 0, stock: >= 0)
 // ✅ Generate unique product_id using timestamp
@@ -26,33 +27,44 @@ import EditProductForm from "./EditProductForm";
 // ✅ Close modal on successful submission
 // ✅ Refetch products list after creating new product
 // ✅ Add loading state while creating product
-// ✅ Test with duplicate product_ids to verify upsert behavior
 
-// TODO: Features to add with updateRecords method:
-// - Add "Edit" button on each product card
-// - Add state for edit modal visibility (isEditOpen)
-// - Add state to track which product is being edited (selectedProduct)
-// - Create EditProductForm component with pre-filled form fields
-// - Implement updateProduct function using manta.updateRecords()
-// - CRITICAL: Always include where clause to target specific product
-// - Add validation using validationRule (singular, not plural!)
-// - Update only the fields that changed
+// TODO: Features implemented with updateRecords:
+// ✅ Add "Edit" button on each product card
+// ✅ Add state for edit modal visibility (isEditOpen)
+// ✅ Add state to track which product is being edited (selectedProduct)
+// ✅ Create EditProductForm component with pre-filled form fields
+// ✅ Implement updateProduct function using manta.updateRecords()
+// ✅ Always include where clause to target specific product
+// ✅ Add validation using validationRule (singular!)
+// ✅ Handle errors with user-friendly messages
+// ✅ Close modal on successful update
+// ✅ Refetch products list after updating
+// ✅ Add loading state while updating
+
+// TODO: Features to add with deleteRecords method:
+// - Add delete icon (trash) on upper right of each product card
+// - Add state for delete confirmation modal (isDeleteOpen)
+// - Add state to track which product is being deleted (productToDelete)
+// - Create DeleteConfirmModal component with warning message
+// - Implement deleteProduct function using manta.deleteRecords()
+// - CRITICAL: Always include where clause to delete specific product
+// - Show product name in confirmation message
 // - Handle errors with user-friendly messages
-// - Close modal on successful update
-// - Refetch products list after updating
-// - Add loading state while updating
-// - BONUS: Implement bulk price update by category
-// - BONUS: Add discount system using updateRecords
-// - BONUS: Implement stock adjustment feature
-// - BONUS: Add dryRun preview before bulk updates
-// - BONUS: Mark low stock items automatically
+// - Close modal after successful deletion
+// - Refetch products list after deleting
+// - Add loading state while deleting
+// - Prevent accidental deletion with confirmation step
+// - BONUS: Add "undo" feature (soft delete)
+// - BONUS: Implement bulk delete by category
+// - BONUS: Add archive instead of delete option
+// - BONUS: Show deleted count in success message
 
 const API_KEY = import.meta.env.VITE_MANTAHQ_API_KEY;
 const manta = new MantaClient({
   sdkKey: API_KEY,
 });
 
-function UpdateRecords() {
+function DeleteRecords() {
   return (
     <ErrorBoundary
       FallbackComponent={Fallback}
@@ -95,9 +107,13 @@ function Main() {
   // Create product modal
   const [isOpen, setIsOpen] = useState(false);
 
-  // States for edit modal
+  // Edit product modal
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+
+  // States for delete confirmation
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState(null);
 
   const filterByCategory = category === "all" ? {} : { category: category };
   const sortOrder = sortPrice === "lowest" ? "asc" : "desc";
@@ -160,8 +176,6 @@ function Main() {
         },
       });
 
-      console.log(response);
-
       if (!response.status) {
         throw new Error("Failed to create product");
       }
@@ -175,23 +189,71 @@ function Main() {
     }
   }
 
-  // TODO: Implement updateProduct function
   async function updateProduct(productId, formData) {
     try {
-      // 1. Call manta.updateRecords with
+      const response = await manta.updateRecords({
+        table: "products2",
+        data: {
+          name: formData.name,
+          category: formData.category,
+          price: parseFloat(formData.price),
+          stock: parseInt(formData.stock),
+          description: formData.description,
+          image_url: formData.image_url,
+        },
+        where: { product_id: productId },
+        options: {
+          validationRule: {
+            name: { required: true, minLength: 3 },
+            price: { required: true, greaterThan: 0 },
+            stock: { required: true, greaterOrEqual: 0 },
+          },
+        },
+      });
+
+      if (!response.status) {
+        throw new Error("Error updating product!");
+      }
+
+      await fetchProducts();
+      alert(`Successfully updated product: ${formData.name}`);
+    } catch (error) {
+      console.error(error);
+      alert("Error updating product: " + error.message);
+    }
+  }
+
+  // TODO: Implement deleteProduct function
+  async function deleteProduct(productId) {
+    try {
+      // 1. Call manta.deleteRecords with:
       // 2. Check response.status
       // 3. Call fetchProducts() to refresh list
-      // 4. Show success alert
+      // 4. Show success alert with product name
       // 5. Handle errors with user-friendly messages
     } catch (error) {
       console.error(error);
     }
   }
 
-  // Handle opening edit modal
   function handleEditProduct(product) {
     setSelectedProduct(product);
     setIsEditOpen(true);
+  }
+
+  // Handle opening delete confirmation
+  function handleDeleteProduct(product) {
+    setProductToDelete(product);
+    setIsDeleteOpen(true);
+  }
+
+  // Handle confirming deletion
+  function handleConfirmDelete() {
+    if (productToDelete) {
+      deleteProduct(productToDelete.product_id);
+      setIsDeleteOpen(false);
+      setProductToDelete(null);
+    }
   }
 
   function handleSetCategoryFilter(e) {
@@ -211,8 +273,6 @@ function Main() {
         setQuery={setQuery}
         setCurrentPage={setCurrentPage}
         onOpenForm={() => setIsOpen(true)}
-        isOpen={isOpen}
-        setIsOpen={setIsOpen}
       />
       <Header
         category={category}
@@ -224,8 +284,9 @@ function Main() {
         <Products
           products={products}
           loading={loading}
-          // Passing handleEditProduct as prop
           onEdit={handleEditProduct}
+          // Passing handleDeleteProduct
+          onDelete={handleDeleteProduct}
         />
       </main>
       <Paging
@@ -234,13 +295,14 @@ function Main() {
         totalPages={totalPages}
       />
 
+      {/* Add Product Modal */}
       <AddProductForm
         isOpen={isOpen}
         setIsOpen={setIsOpen}
         onSubmit={createProducts}
       />
 
-      {/* Add Edit Product Modal */}
+      {/* Edit Product Modal */}
       {selectedProduct && (
         <EditProductForm
           isOpen={isEditOpen}
@@ -249,6 +311,20 @@ function Main() {
           onSubmit={(formData) =>
             updateProduct(selectedProduct.product_id, formData)
           }
+        />
+      )}
+
+      {/*  Delete Confirmation Modal */}
+      {productToDelete && (
+        <DeleteConfirmModal
+          isOpen={isDeleteOpen}
+          setIsOpen={setIsDeleteOpen}
+          product={productToDelete}
+          onConfirm={handleConfirmDelete}
+          onCancel={() => {
+            setIsDeleteOpen(false);
+            setProductToDelete(null);
+          }}
         />
       )}
     </div>
@@ -329,7 +405,7 @@ function Header({ category, sortPrice, setSortPrice, onSetCategoryFilter }) {
   );
 }
 
-function Products({ products, loading, onEdit }) {
+function Products({ products, loading, onEdit, onDelete }) {
   return (
     <>
       {loading ? (
@@ -342,8 +418,29 @@ function Products({ products, loading, onEdit }) {
       ) : (
         products.map((product) => (
           <div
-            className="flex flex-col cursor-pointer flex-1 min-w-[150px] max-w-[300px] rounded-xl bg-stone-100"
+            className="relative flex flex-col cursor-pointer flex-1 min-w-[150px] max-w-[300px] rounded-xl bg-stone-100"
             key={product.product_id}>
+            {/* Delete Icon */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(product);
+              }}
+              className="absolute top-2 right-4 p-3 bg-red-500 text-white rounded-full hover:bg-red-600 transition z-10"
+              aria-label="Delete product">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                className="w-6 h-6">
+                <path
+                  fillRule="evenodd"
+                  d="M16.5 4.478v.227a48.816 48.816 0 0 1 3.878.512.75.75 0 1 1-.256 1.478l-.209-.035-1.005 13.07a3 3 0 0 1-2.991 2.77H8.084a3 3 0 0 1-2.991-2.77L4.087 6.66l-.209.035a.75.75 0 0 1-.256-1.478A48.567 48.567 0 0 1 7.5 4.705v-.227c0-1.564 1.213-2.9 2.816-2.951a52.662 52.662 0 0 1 3.369 0c1.603.051 2.815 1.387 2.815 2.951Zm-6.136-1.452a51.196 51.196 0 0 1 3.273 0C14.39 3.05 15 3.684 15 4.478v.113a49.488 49.488 0 0 0-6 0v-.113c0-.794.609-1.428 1.364-1.452Zm-.355 5.945a.75.75 0 1 0-1.5.058l.347 9a.75.75 0 1 0 1.499-.058l-.346-9Zm5.48.058a.75.75 0 1 0-1.498-.058l-.347 9a.75.75 0 0 0 1.5.058l.345-9Z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </button>
+
             <img
               src={product.image_url}
               alt={`product image of a ${product.name}`}
@@ -371,10 +468,9 @@ function Products({ products, loading, onEdit }) {
                 {product.category}
               </span>
 
-              {/* Edit button */}
               <button
                 onClick={() => onEdit(product)}
-                className="w-full mt-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
+                className="w-full cursor-pointer mt-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
                 Edit Product
               </button>
             </div>
@@ -409,4 +505,4 @@ function Paging({ currentPage, setCurrentPage, totalPages }) {
   );
 }
 
-export default UpdateRecords;
+export default DeleteRecords;
