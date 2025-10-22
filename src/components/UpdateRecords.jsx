@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useDebounce } from "use-debounce";
 import { ErrorBoundary } from "react-error-boundary";
 import AddProductForm from "./AddProductForm";
+import EditProductForm from "./EditProductForm";
 
 // TODO: Features implemented with fetchAllRecords:
 // ✅ Set up the SDK
@@ -13,36 +14,50 @@ import AddProductForm from "./AddProductForm";
 // ✅ Add pagination
 // ✅ Add search functionality
 
-// =============================================================================
+// TODO: Features implemented with createRecords:
+// ✅ Create an "Add Product" button in the Navigation component
+// ✅ Add state for modal visibility (isOpen)
+// ✅ Create AddProductForm component with form fields (name, category, price, stock, description, image_url)
+// ✅ Implement createProduct function using manta.createRecords()
+// ✅ Add form validation (name: minLength 3, price: > 0, stock: >= 0)
+// ✅ Generate unique product_id using timestamp
+// ✅ Use upsert option to handle potential conflicts
+// ✅ Handle errors and show user-friendly messages
+// ✅ Close modal on successful submission
+// ✅ Refetch products list after creating new product
+// ✅ Add loading state while creating product
+// ✅ Test with duplicate product_ids to verify upsert behavior
 
-// TODO: Features to add with createRecords method:
-// - Create an "Add Product" button in the Navigation component
-// - Add state for modal visibility (isOpen)
-// - Create AddProductForm component with form fields (name, category, price, stock, description, image_url)
-// - Implement createProduct function using manta.createRecords()
-// - Add form validation (name: minLength 3, price: > 0, stock: >= 0)
-// - Generate unique product_id using timestamp
-// - Use upsert option to handle potential conflicts
-// - Handle errors and show user-friendly messages
-// - Close modal on successful submission
-// - Refetch products list after creating new product
-// - Add loading state while creating product
-// - Test with duplicate product_ids to verify upsert behavior
-// - BONUS: Add dryRun option to preview before actual creation
-// - BONUS: Implement bulk product creation (multiple products at once)
+// TODO: Features to add with updateRecords method:
+// - Add "Edit" button on each product card
+// - Add state for edit modal visibility (isEditOpen)
+// - Add state to track which product is being edited (selectedProduct)
+// - Create EditProductForm component with pre-filled form fields
+// - Implement updateProduct function using manta.updateRecords()
+// - CRITICAL: Always include where clause to target specific product
+// - Add validation using validationRule (singular, not plural!)
+// - Update only the fields that changed
+// - Handle errors with user-friendly messages
+// - Close modal on successful update
+// - Refetch products list after updating
+// - Add loading state while updating
+// - BONUS: Implement bulk price update by category
+// - BONUS: Add discount system using updateRecords
+// - BONUS: Implement stock adjustment feature
+// - BONUS: Add dryRun preview before bulk updates
+// - BONUS: Mark low stock items automatically
 
 const API_KEY = import.meta.env.VITE_MANTAHQ_API_KEY;
 const manta = new MantaClient({
   sdkKey: API_KEY,
 });
 
-function CreateRecords() {
+function UpdateRecords() {
   return (
     <ErrorBoundary
       FallbackComponent={Fallback}
-      onReset={() => window.location.reload()}
-    >
-      <Main />;
+      onReset={() => window.location.reload()}>
+      <Main />
     </ErrorBoundary>
   );
 }
@@ -52,16 +67,14 @@ function Fallback({ error, resetErrorBoundary }) {
     <>
       <div
         role="alert"
-        className="flex items-center justify-between p-4 bg-red-50 text-red-700"
-      >
+        className="flex items-center justify-between p-4 bg-red-50 text-red-700">
         <div>
           <p>Something went wrong:</p>
           <pre>{error.message}</pre>
         </div>
         <button
           onClick={resetErrorBoundary}
-          className=" bg-blue-500 text-white px-4 py-2 rounded"
-        >
+          className="bg-blue-500 text-white px-4 py-2 rounded">
           Try again
         </button>
       </div>
@@ -79,7 +92,12 @@ function Main() {
   const [totalPages, setTotalPages] = useState(1);
   const [query, setQuery] = useState("");
 
+  // Create product modal
   const [isOpen, setIsOpen] = useState(false);
+
+  // States for edit modal
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   const filterByCategory = category === "all" ? {} : { category: category };
   const sortOrder = sortPrice === "lowest" ? "asc" : "desc";
@@ -123,15 +141,57 @@ function Main() {
 
   async function createProducts(formData) {
     try {
-      //
-      // TODO: Your manta.createRecords() implementation here
-      //
+      const response = await manta.createRecords({
+        table: "products2",
+        data: [
+          {
+            name: formData.name,
+            category: formData.category,
+            product_id: `P${Date.now()}`,
+            price: parseFloat(formData.price),
+            stock: parseInt(formData.stock),
+            description: formData.description || "",
+            image_url: formData.image_url || "https://via.placeholder.com/300",
+          },
+        ],
+        options: {
+          upsert: true,
+          conflictKeys: ["product_id"],
+        },
+      });
+
+      console.log(response);
+
+      if (!response.status) {
+        throw new Error("Failed to create product");
+      }
+
+      await fetchProducts();
       alert("Product added successfully!");
     } catch (error) {
       console.error(error);
       alert("Error adding product: " + error.message);
-      throw error; // Re-throw so the form can handle it
+      throw error;
     }
+  }
+
+  // TODO: Implement updateProduct function
+  async function updateProduct(productId, formData) {
+    try {
+      // 1. Call manta.updateRecords with
+      // 2. Check response.status
+      // 3. Call fetchProducts() to refresh list
+      // 4. Show success alert
+      // 5. Handle errors with user-friendly messages
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  // Handle opening edit modal
+  function handleEditProduct(product) {
+    setSelectedProduct(product);
+    setIsEditOpen(true);
   }
 
   function handleSetCategoryFilter(e) {
@@ -150,7 +210,7 @@ function Main() {
         query={query}
         setQuery={setQuery}
         setCurrentPage={setCurrentPage}
-        onOpenForm={() => setIsOpen(true)} // Changed this
+        onOpenForm={() => setIsOpen(true)}
         isOpen={isOpen}
         setIsOpen={setIsOpen}
       />
@@ -161,7 +221,12 @@ function Main() {
         setSortPrice={setSortPrice}
       />
       <main className="mx-10 mt-10 flex flex-wrap gap-6">
-        <Products products={products} loading={loading} />
+        <Products
+          products={products}
+          loading={loading}
+          // Passing handleEditProduct as prop
+          onEdit={handleEditProduct}
+        />
       </main>
       <Paging
         currentPage={currentPage}
@@ -169,12 +234,23 @@ function Main() {
         totalPages={totalPages}
       />
 
-      {/* Add the form component here */}
       <AddProductForm
         isOpen={isOpen}
         setIsOpen={setIsOpen}
         onSubmit={createProducts}
       />
+
+      {/* Add Edit Product Modal */}
+      {selectedProduct && (
+        <EditProductForm
+          isOpen={isEditOpen}
+          setIsOpen={setIsEditOpen}
+          product={selectedProduct}
+          onSubmit={(formData) =>
+            updateProduct(selectedProduct.product_id, formData)
+          }
+        />
+      )}
     </div>
   );
 }
@@ -193,8 +269,7 @@ function Navigation({ query, setQuery, setCurrentPage, onOpenForm }) {
       <h1 className="font-semibold text-5xl tracking-tight">eShopExchange</h1>
       <button
         className="font-medium text-[14px] bg-amber-400 px-10 py-4 rounded-md cursor-pointer hover:bg-amber-400/80 transition"
-        onClick={onOpenForm} // Changed this
-      >
+        onClick={onOpenForm}>
         List an item
       </button>
 
@@ -231,10 +306,9 @@ function Header({ category, sortPrice, setSortPrice, onSetCategoryFilter }) {
       )}
       <div className="flex gap-4">
         <select
-          className=" rounded-lg px-3 py-2 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="rounded-lg px-3 py-2 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
           value={category}
-          onChange={onSetCategoryFilter}
-        >
+          onChange={onSetCategoryFilter}>
           <option value="all">All products</option>
           <option value="Electronics">Electronics</option>
           <option value="Furniture">Furniture</option>
@@ -246,8 +320,7 @@ function Header({ category, sortPrice, setSortPrice, onSetCategoryFilter }) {
         <select
           value={sortPrice}
           onChange={(e) => setSortPrice(e.target.value)}
-          className="rounded-lg px-3 py-2 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
+          className="rounded-lg px-3 py-2 border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
           <option value="lowest">Lowest price</option>
           <option value="highest">Highest price</option>
         </select>
@@ -256,7 +329,7 @@ function Header({ category, sortPrice, setSortPrice, onSetCategoryFilter }) {
   );
 }
 
-function Products({ products, loading }) {
+function Products({ products, loading, onEdit }) {
   return (
     <>
       {loading ? (
@@ -269,9 +342,8 @@ function Products({ products, loading }) {
       ) : (
         products.map((product) => (
           <div
-            className="flex flex-col  cursor-pointer flex-1 min-w-[150px] max-w-[300px]  rounded-xl  bg-stone-100"
-            key={product.product_id}
-          >
+            className="flex flex-col cursor-pointer flex-1 min-w-[150px] max-w-[300px] rounded-xl bg-stone-100"
+            key={product.product_id}>
             <img
               src={product.image_url}
               alt={`product image of a ${product.name}`}
@@ -281,8 +353,7 @@ function Products({ products, loading }) {
               <p className="text-base text-gray-600">
                 {product.name} •{" "}
                 <span
-                  className={`${product.stock <= 10 ? "text-red-500" : ""}`}
-                >
+                  className={`${product.stock <= 10 ? "text-red-500" : ""}`}>
                   {product.stock <= 10
                     ? `Only ${product.stock} left`
                     : "In stock"}
@@ -292,13 +363,20 @@ function Products({ products, loading }) {
                 ${product.price}
               </h3>
               <p className="text-gray-700 text-lg">
-                {product.description.length > 30
+                {product.description?.length > 30
                   ? product.description.slice(0, 32) + "..."
-                  : product.description}
+                  : product.description || "No description"}
               </p>
               <span className="text-sm text-blue-500 uppercase tracking-tight font-medium">
                 {product.category}
               </span>
+
+              {/* Edit button */}
+              <button
+                onClick={() => onEdit(product)}
+                className="w-full mt-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
+                Edit Product
+              </button>
             </div>
           </div>
         ))
@@ -313,8 +391,7 @@ function Paging({ currentPage, setCurrentPage, totalPages }) {
       <button
         disabled={currentPage === 1}
         onClick={() => setCurrentPage((prevPage) => Math.max(1, prevPage - 1))}
-        className="px-4 py-2 cursor-pointer text-base sm:text-xl text-blue-500"
-      >
+        className="px-4 py-2 cursor-pointer text-base sm:text-xl text-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
         &larr; Previous page
       </button>
       <span className="text-base sm:text-xl">
@@ -322,15 +399,14 @@ function Paging({ currentPage, setCurrentPage, totalPages }) {
       </span>
       <button
         disabled={currentPage === totalPages || totalPages === 0}
-        className="px-4 py-2 cursor-pointer text-base sm:text-xl text-blue-500"
+        className="px-4 py-2 cursor-pointer text-base sm:text-xl text-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
         onClick={() =>
           setCurrentPage((prevPage) => Math.min(totalPages, prevPage + 1))
-        }
-      >
-        Next page &rarr;{" "}
+        }>
+        Next page &rarr;
       </button>
     </div>
   );
 }
 
-export default CreateRecords;
+export default UpdateRecords;
