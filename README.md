@@ -97,7 +97,7 @@ Add an "Edit product" flow (modal form already scaffolded in `src/components/Edi
 
 ## Feedback
 
-When done, fill out the Challenge 3 feedback form: [Challenge 3 Feedback Form](https://forms.gle/...)
+When done, fill out the Challenge 3 feedback form: [Challenge 3 Feedback Form](https://docs.google.com/forms/d/e/1FAIpQLSc_5paJinXTq8zLtv10lVWuEFcWdjuyF8ywrIjQKa0S3F6bEQ/viewform?usp=send_form)
 
 ## Need Help?
 
