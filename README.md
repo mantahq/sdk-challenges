@@ -88,7 +88,7 @@ Your app should:
 
 ## Feedback
 
-When done, fill out the Challenge 1 feedback form: [Challenge 1 Feedback Form](https://forms.gle/...)
+When done, fill out the Challenge 1 feedback form: [Challenge 1 Feedback Form](https://docs.google.com/forms/d/e/1FAIpQLSc_5paJinXTq8zLtv10lVWuEFcWdjuyF8ywrIjQKa0S3F6bEQ/viewform?usp=send_form)
 
 ## Need Help?
 
