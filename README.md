@@ -11,6 +11,8 @@ Welcome to the MantaHQ SDK beta testing program. This repository contains a prog
 
 ### Setup
 
+You can either **fork the repository** or:
+
 1. **Clone the repository**
 ```bash
 git clone https://github.com/mantahq/sdk-challenges
